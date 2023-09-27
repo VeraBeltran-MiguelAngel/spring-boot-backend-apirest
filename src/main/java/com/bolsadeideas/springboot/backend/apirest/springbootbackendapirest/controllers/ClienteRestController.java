@@ -2,6 +2,7 @@ package com.bolsadeideas.springboot.backend.apirest.springbootbackendapirest.con
 
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,7 +13,11 @@ import com.bolsadeideas.springboot.backend.apirest.springbootbackendapirest.mode
  * ApiRest
  * A diferecnia de @Controller que solo es para apps web MVC con vistas
  * usaremos @RestController  y crearemos la url o endpoint con @requestmapping 
+ * Debemos agregarel crossOrigin para que se comunique con angular(especificar 
+ * los dominios permitidos), si no especificas que metodos estan permitidos
+ * la app considera que tiene todos los permisos
  */
+@CrossOrigin(origins = {"http://localhost:4200"})
 @RestController
 @RequestMapping("/api")
 public class ClienteRestController {
