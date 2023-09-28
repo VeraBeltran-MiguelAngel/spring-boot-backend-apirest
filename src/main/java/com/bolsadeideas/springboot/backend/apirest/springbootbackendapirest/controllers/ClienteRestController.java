@@ -4,9 +4,11 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -71,5 +73,38 @@ public class ClienteRestController {
        */
       return clienteService.save(cliente);
     }
+
+    /**
+     * Actualizar cliente
+     * @param cliente,id 
+     * el 1°cliente que esta dentro del cuerpo del request y un id
+     */
+    @PutMapping("clientes/{id}")
+    @ResponseStatus(HttpStatus.CREATED)
+    public Cliente update(@RequestBody Cliente cliente, @PathVariable Long id){
+      //primero obtenemos el cliente de la BD  con el id que nos proporcionan
+      Cliente clienteActual = clienteService.findById(id);
+
+      //actualizamos los datos del cliente encontrado por el id
+      clienteActual.setApellido(cliente.getApellido());
+      clienteActual.setNombre(cliente.getNombre());
+      clienteActual.setEmail(cliente.getEmail());
+
+      /*el metodo save funciona para updates e insert(cuando el id es null), 
+      cuando el id tiene un valor hara un merge (update).
+      Guardamos el cliente actualizado*/
+      return clienteService.save(clienteActual);
+
+    }
+
+    /**
+     * Eliminar cliente
+     */
+    @DeleteMapping("clientes/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete (@PathVariable Long id){
+      clienteService.delete(id);
+    }
+
 }
 
