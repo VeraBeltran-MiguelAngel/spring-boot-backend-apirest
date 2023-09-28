@@ -8,6 +8,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -31,6 +32,15 @@ public class Cliente implements Serializable {
     @Column(name = "create_at") // indica el nombre de la columna en nuestra BD
     @Temporal(TemporalType.DATE) // para transformar la fecha de java a la fecha date de SQL 
     private Date createAt;
+    
+    /**
+     * Evento de ciclo de vida de las clases entity
+     * Antes de persistir(guardar) asignamos la fecha
+     */
+    @PrePersist
+    public void prePersit (){
+        createAt = new Date();
+    }
 
     public Long getId() {
         return id;
