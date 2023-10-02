@@ -179,7 +179,7 @@ public class ClienteRestController {
       return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    response.put("mensaje", "El cliente ha sio actualizado con exito!");
+    response.put("mensaje", "El cliente ha sido actualizado con exito!");
     response.put("cliente", clienteUpdated);
     return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 
