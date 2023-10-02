@@ -24,9 +24,12 @@ public class Cliente implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // si fuera oracle eria sequence
     private Long id;
-    //estas columnas coinciden con el nombre de las que estan en BD y se omite el @Column
+    //estas columnas coinciden con el nombre de las que estan en BD y se omite el @Column,
+    //si deseas validaciones si debes colocarlo
+    @Column(nullable = false)
     private String nombre;
     private String apellido;
+    @Column(nullable = false,unique = true)
     private String email;
 
     @Column(name = "create_at") // indica el nombre de la columna en nuestra BD
