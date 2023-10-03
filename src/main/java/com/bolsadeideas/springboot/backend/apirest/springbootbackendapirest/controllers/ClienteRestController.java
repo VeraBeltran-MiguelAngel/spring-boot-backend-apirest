@@ -3,11 +3,13 @@ package com.bolsadeideas.springboot.backend.apirest.springbootbackendapirest.con
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.bolsadeideas.springboot.backend.apirest.springbootbackendapirest.models.entity.Cliente;
 import com.bolsadeideas.springboot.backend.apirest.springbootbackendapirest.models.services.IClienteService;
+
+import jakarta.validation.Valid;
 
 /**
  * ApiRest
@@ -108,18 +112,35 @@ public class ClienteRestController {
    * @param cliente contiene los datos para que se persistan(vienen en json desde
    *                angular)
    *                pero aqui se debe convertir en un objeto cliente, al venir en
-   *                json dentro del cuerpo
-   *                de la peticion del request debemos indicr el @RequestBody
+   *                json dentro del cuerpo de la peticion del request debemos
+   *                indicar el @RequestBody , 2° Agregamos el interceptor @Valid
+   *                para que el cliente este correcto antes de entrar al metodo
+   *                create (se envia a traves de angular(datos ingresados por
+   *                usuario) en un json).
+   * @param result  inyectar al controlador el objeto que contiene todos los
+   *                mensajes de error para saber si existe un problema
    * @return el mensaje de creado o de error
    */
   @PostMapping("/clientes")
-  public ResponseEntity<?> create(@RequestBody Cliente cliente) {
+  public ResponseEntity<?> create(@Valid @RequestBody Cliente cliente, BindingResult result) {
     /**
      * al crear un cliente debemos guardar la fecha de creacion podria quedar asi
      * cliente.setCreateAt(new Date()); java util pero no es elegante
      */
     Cliente clienteNew = null;
     Map<String, Object> response = new HashMap<>();
+    // ! errores de validacion
+    if (result.hasErrors()) {
+      // *usando streams
+      // convertimos la lista de tipo FieldError a un stream
+      List<String> errors = result.getFieldErrors().stream()
+          .map(err -> "El campo: '" + err.getField() + "' " // transformamos cada elemento a String
+              + err.getDefaultMessage())
+          .collect(Collectors.toList());// convertimos nuestro stream a un tipo List
+
+      response.put("errors", errors);
+      return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
+    }
     try {
       // si no existe ningun error de insercion de datos guarda el registro
       clienteNew = clienteService.save(cliente);
@@ -141,13 +162,27 @@ public class ClienteRestController {
    * 
    * @param cliente,id
    *                   el 1°cliente que esta dentro del cuerpo del request y un id
+   * @param result     objeto que contiene los errores
    */
   @PutMapping("clientes/{id}")
-  public ResponseEntity<?> update(@RequestBody Cliente cliente, @PathVariable Long id) {
+  public ResponseEntity<?> update(@Valid @RequestBody Cliente cliente, BindingResult result, @PathVariable Long id) {
     // primero obtenemos el cliente de la BD con el id que nos proporcionan
     Cliente clienteActual = clienteService.findById(id);
     Cliente clienteUpdated = null;
     Map<String, Object> response = new HashMap<>();
+
+    // !errores de validacion
+    if (result.hasErrors()) {
+      // *usando streams
+      // convertimos la lista de tipo FieldError a un stream
+      List<String> errors = result.getFieldErrors().stream()
+          .map(err -> "El campo: '" + err.getField() + "' " // transformamos cada elemento a String
+              + err.getDefaultMessage())
+          .collect(Collectors.toList());// convertimos nuestro stream a un tipo List
+
+      response.put("errors", errors);
+      return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
+    }
 
     // !Validar si el cliente es nulo
     if (clienteActual == null) {
@@ -195,8 +230,7 @@ public class ClienteRestController {
 
     try {
       clienteService.delete(id);
-    } 
-    catch (DataAccessException e) {
+    } catch (DataAccessException e) {
       response.put("mensaje", "Error al eliminar el cliente en la BD");
       response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
       return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
